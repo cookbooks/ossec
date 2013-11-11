@@ -1,0 +1,15 @@
+{
+  "sources": {
+    "ossec": {
+      "path": "."
+    },
+    "chef-solo-search": {
+      "locked_version": "0.5.1",
+      "git": "https://github.com/edelight/chef-solo-search.git",
+      "ref": "681f78a108f5f8a3655551b32d9939603628c568"
+    },
+    "build-essential": {
+      "locked_version": "1.4.2"
+    }
+  }
+}
