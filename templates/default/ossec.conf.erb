@@ -90,65 +90,19 @@
   </rootcheck>
 
 <% end -%>
+<% if ! @ossec.has_key?('commands') -%>
+<%   @ossec['commands'].each_key do |command| -%>
+  <command>
+    <name><%= command %></name>
+    <executable><%= @ossec[command]['executable'] %></executable>
+    <expect><%= @ossec[command]['srcip'] %></expect>
+    <timeout_allowed><%= @ossec[command]['timeout_allowed'] %></timeout_allowed>
+  </command>  
   
-
-  <command>
-    <name>host-deny</name>
-    <executable>host-deny.sh</executable>
-    <expect>srcip</expect>
-    <timeout_allowed>yes</timeout_allowed>
-  </command>  
-
-  <command>
-    <name>firewall-drop</name>
-    <executable>firewall-drop.sh</executable>
-    <expect>srcip</expect>
-    <timeout_allowed>yes</timeout_allowed>
-  </command>  
-
-  <command>
-    <name>disable-account</name>
-    <executable>disable-account.sh</executable>
-    <expect>user</expect>
-    <timeout_allowed>yes</timeout_allowed>
-  </command>  
-
-  <command>
-    <name>restart-ossec</name>
-    <executable>restart-ossec.sh</executable>
-    <expect></expect>
-  </command>
-
-  <command>
-    <name>route-null</name>
-    <executable>route-null.sh</executable>
-    <expect>srcip</expect>
-    <timeout_allowed>yes</timeout_allowed>
-  </command>
-
-  <!-- Files to monitor (localfiles) -->
-
-  <localfile>
-    <log_format>syslog</log_format>
-    <location>/var/log/messages</location>
-  </localfile>
-
-  <localfile>
-    <log_format>syslog</log_format>
-    <location>/var/log/auth.log</location>
-  </localfile>
-
-  <localfile>
-    <log_format>syslog</log_format>
-    <location>/var/log/syslog</location>
-  </localfile>
-
-  <localfile>
-    <log_format>syslog</log_format>
-    <location>/var/log/mail.info</location>
-  </localfile>
-
+<%   end -%>
+<% end -%>
 <% unless node['ossec']['logs'].empty? -%>
+  <!-- Files to monitor (localfiles) -->
 <%   node['ossec']['logs'].each do |log| -%>
   <localfile>
     <log_format>syslog</log_format>

@@ -22,7 +22,7 @@ default['ossec']['server_role'] = "ossec_server"
 default['ossec']['checksum']    = "e7bb4701a6b9a40f76d4e2c3c39106ded3c37f13ccc3ce476029da1f0e9c9f9e"
 default['ossec']['version']     = "2.7"
 default['ossec']['url']         = "http://www.ossec.net/files/ossec-hids-#{node['ossec']['version']}.tar.gz"
-default['ossec']['logs']        = []
+default['ossec']['logs']        = ["/var/log/messages", "/var/log/auth.log", "/var/log/syslog", "/var/log/mail.info"]
 
 # server-only
 default['ossec']['server']['maxagents'] = 256
@@ -30,6 +30,33 @@ default['ossec']['server']['maxagents'] = 256
 # used to populate config files and preload values for install
 default['ossec']['user']['alerts']['log_alert_level'] = 1
 default['ossec']['user']['alerts']['email_alert_level'] = 7
+default['ossec']['user']['commands'] = {
+    "host-deny" => {
+      "executable" => "host-deny.sh",
+      "expect" => "srcip",
+      "timeout_allowed" => "yes"
+    },
+    "firewall-drop" => {
+      "executable" => "firewall-drop.sh",
+      "expect" => "srcip",
+      "timeout_allowed" => "yes"
+    },  
+    "disable-account" => {
+      "executable" => "disable-account.sh",
+      "expect" => "user",
+      "timeout_allowed" => "yes"
+    },  
+    "restart-ossec" => {
+      "executable" => "restart-ossec.sh",
+      "expect" => "",
+      "timeout_allowed" => "yes"
+    },
+    "route-null" => {
+      "executable" => "route-null.sh",
+      "expect" => "srcip",
+      "timeout_allowed" => "yes"
+    }
+}
 default['ossec']['user']['language'] = "en"
 default['ossec']['user']['install_type'] = "local"
 default['ossec']['user']['dir'] = "/var/ossec"

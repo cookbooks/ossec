@@ -16,37 +16,26 @@ Vagrant.configure("2") do |config|
     vb.customize ["modifyvm", :id, "--memory", 1024]
   end
   
-  config.vm.provision :chef_solo do |chef|
-    # chef.cookbooks_path = ["~/.berkshelf/cookbooks"]
-    
-    # Turn on verbose Chef logging if necessary
-    chef.log_level      = :debug
- 
-    # List the recipies you are going to work on/need.
-    chef.roles_path = "roles"
-    chef.data_bags_path = "data_bags"
-    chef.add_recipe('chef-solo-search')
-    chef.add_recipe('build-essential')
-    
-    #chef.add_role("ossecserver")
-
-    
-    #chef.json = {
-    #	"run_list" => ["recipe[chef-solo-search]", "recipe[build-essential]", "recipe[ossec::client]" ]
-    #}
-
-  end
-  
   config.vm.define :server do | server |
-  	server.hostname = "ossec-server.vagrantup.com"
+  	server.vm.hostname = "ossec-server.vagrantup.com"
+  	server.vm.network "private_network", ip: "192.168.50.11"
   	server.vm.provision :chef_solo do |chef|
+	  	chef.roles_path = "vagrant_data/roles"
+	    chef.data_bags_path = "vagrant_data/data_bags"
+	    chef.add_recipe('chef-solo-search')
+	    chef.add_recipe('build-essential')
   	  chef.add_recipe('ossec::server')
   	end
   end
   
   config.vm.define :client do | client |
-  	client.hostname = "ossec-client.vagrantup.com"
+  	client.vm.hostname = "ossec-client.vagrantup.com"
+  	client.vm.network "private_network", ip: "192.168.50.12"
   	client.vm.provision :chef_solo do |chef|
+	  	chef.roles_path = "vagrant_data/roles"
+	    chef.data_bags_path = "vagrant_data/data_bags"
+	    chef.add_recipe('chef-solo-search')
+	    chef.add_recipe('build-essential')
   	  chef.add_recipe('ossec::client')
   	end
   end

@@ -30,7 +30,7 @@ end
 node.set['ossec']['user']['install_type'] = "agent"
 node.set['ossec']['user']['agent_server_ip'] = ossec_server.first
 
-node.save
+#node.save
 
 include_recipe "ossec"
 
