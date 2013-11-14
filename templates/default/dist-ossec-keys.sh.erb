@@ -1,7 +1,13 @@
 #!/bin/sh
 #
+<%
+	ipaddresses = Array.new
+	@ssh_hosts.each do |n|
+		ipaddresses << n['ipaddress']
+	end
+-%>
 
-for host in <%= @ssh_hosts.join(' ') %>
+for host in <%= ipaddresses.join(" ") %>
 do
   key=`mktemp`
   grep $host <%= node['ossec']['user']['dir'] %>/etc/client.keys > $key
