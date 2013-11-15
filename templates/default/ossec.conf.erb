@@ -1,13 +1,14 @@
 <ossec_config>
   <global>
-<% if @ossec['enable_email'] -%>
+<% if @ossec['email']['enable'] -%>
     <email_notification>yes</email_notification>
+    <email_to><%= @ossec['email']['address'] %></email_to>
+    <smtp_server><%= @ossec['email']['smtp'] %></smtp_server>
+    <email_from>ossecm@<%= node['fqdn'] %></email_from>
+
 <% else -%>
     <email_notification>no</email_notification>
-<% end -%>
-    <email_to><%= @ossec['email'] %></email_to>
-    <smtp_server><%= @ossec['smtp'] %></smtp_server>
-    <email_from>ossecm@<%= node['fqdn'] %></email_from>
+<% end -%> 
 <% @ossec['white_list'].each do |wl| -%>
     <white_list><%= wl %></white_list>
 <% end -%>
@@ -32,12 +33,12 @@
 <% end -%>
   </alerts>
   
-<% if @ossec.has_key?('syslog') && @ossec['syslog']['enable'] -%>
+<% if @ossec.has_key?('remote_syslog') && @ossec['remote_syslog']['enable'] -%>
   <syslog_output>
-    <server><%= @ossec['syslog']['server'] %></server>
-    <port><%= @ossec['syslog']['port'] %></port>
-    <level><%= @ossec['syslog']['level'] %></level>
-    <group><%= @ossec['syslog']['group'] %></group>
+    <server><%= @ossec['remote_syslog']['server'] %></server>
+    <port><%= @ossec['remote_syslog']['port'] %></port>
+    <level><%= @ossec['remote_syslog']['level'] %></level>
+    <group><%= @ossec['remote_syslog']['group'] %></group>
   </syslog_output>
   
 <% end -%>
@@ -101,9 +102,9 @@
   
 <%   end -%>
 <% end -%>
-<% unless node['ossec']['logs'].empty? -%>
+<% unless !@ossec.has_key?('logs') -%>
   <!-- Files to monitor (localfiles) -->
-<%   node['ossec']['logs'].each do |log| -%>
+<%   @ossec['logs'].each do |log| -%>
   <localfile>
     <log_format>syslog</log_format>
     <location><%= log %></location>

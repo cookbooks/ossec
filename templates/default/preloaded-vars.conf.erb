@@ -43,7 +43,7 @@ USER_ENABLE_EMAIL="n"
 <% end -%>
 USER_EMAIL_ADDRESS="<%= @ossec['email'] %>"
 USER_EMAIL_SMTP="<%= @ossec['smtp'] %>"
-<% if @ossec['remote_syslog'] -%>
+<% if @ossec['remote_syslog']['enable'] -%>
 USER_ENABLE_SYSLOG="y"
 <% else -%>
 USER_ENABLE_SYSLOG="n"
