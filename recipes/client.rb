@@ -18,19 +18,24 @@
 #
 
 ossec_server = Array.new
-
-if node.run_list.roles.include?(node['ossec']['server_role'])
-  ossec_server << node['ipaddress']
-else
-  search(:node,"role:#{node['ossec']['server_role']}") do |n|
-    ossec_server << n['ipaddress']
-  end
-end
-
 node.set['ossec']['user']['install_type'] = "agent"
-node.set['ossec']['user']['agent_server_ip'] = ossec_server.first
 
-node.save
+if Chef::Config[:solo]
+  if node['ossec']['user']['agent_server_ip'] == nil
+    Chef::Application.fatal! "No ossec server ip has been defined in node['ossec']['user']['agent_server_ip']!"
+  end
+else
+  if node.run_list.roles.include?(node['ossec']['server_role'])
+    ossec_server << node['ipaddress']
+  else
+    search(:node,"role:#{node['ossec']['server_role']}") do |n|
+      ossec_server << n['ipaddress']
+    end
+  end
+
+  node.set['ossec']['user']['agent_server_ip'] = ossec_server.first
+  node.save
+end
 
 include_recipe "ossec"
 

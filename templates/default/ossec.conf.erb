@@ -1,13 +1,14 @@
 <ossec_config>
   <global>
-<% if @ossec['enable_email'] -%>
+<% if @ossec['email']['enable'] -%>
     <email_notification>yes</email_notification>
+    <email_to><%= @ossec['email']['address'] %></email_to>
+    <smtp_server><%= @ossec['email']['smtp'] %></smtp_server>
+    <email_from>ossecm@<%= node['fqdn'] %></email_from>
+
 <% else -%>
     <email_notification>no</email_notification>
-<% end -%>
-    <email_to><%= @ossec['email'] %></email_to>
-    <smtp_server><%= @ossec['smtp'] %></smtp_server>
-    <email_from>ossecm@<%= node['fqdn'] %></email_from>
+<% end -%> 
 <% @ossec['white_list'].each do |wl| -%>
     <white_list><%= wl %></white_list>
 <% end -%>
@@ -25,89 +26,43 @@
   </remote>
 
 <% end -%>
+  <alerts>
+    <log_alert_level><%= @ossec['alerts']['log_alert_level'] %></log_alert_level>
+<% if @ossec['enable_email'] -%>
+    <email_alert_level><%= @ossec['alerts']['email_alert_level'] %></email_alert_level>
+<% end -%>
+  </alerts>
+  
+<% if @ossec.has_key?('remote_syslog') && @ossec['remote_syslog']['enable'] -%>
+  <syslog_output>
+    <server><%= @ossec['remote_syslog']['server'] %></server>
+    <port><%= @ossec['remote_syslog']['port'] %></port>
+    <level><%= @ossec['remote_syslog']['level'] %></level>
+    <group><%= @ossec['remote_syslog']['group'] %></group>
+  </syslog_output>
+  
+<% end -%>
+<% if @ossec.has_key?('rules') -%>
   <rules>
-    <include>rules_config.xml</include>
-    <include>pam_rules.xml</include>
-    <include>sshd_rules.xml</include>
-    <include>telnetd_rules.xml</include>
-    <include>syslog_rules.xml</include>
-    <include>arpwatch_rules.xml</include>
-    <include>symantec-av_rules.xml</include>
-    <include>symantec-ws_rules.xml</include>
-    <include>pix_rules.xml</include>
-    <include>named_rules.xml</include>
-    <include>smbd_rules.xml</include>
-    <include>vsftpd_rules.xml</include>
-    <include>pure-ftpd_rules.xml</include>
-    <include>proftpd_rules.xml</include>
-    <include>ms_ftpd_rules.xml</include>
-    <include>ftpd_rules.xml</include>
-    <include>hordeimp_rules.xml</include>
-    <include>roundcube_rules.xml</include>
-    <include>wordpress_rules.xml</include>
-    <include>cimserver_rules.xml</include>
-    <include>vpopmail_rules.xml</include>
-    <include>vmpop3d_rules.xml</include>
-    <include>courier_rules.xml</include>
-    <include>web_rules.xml</include>
-    <include>apache_rules.xml</include>
-    <include>nginx_rules.xml</include>
-    <include>php_rules.xml</include>
-    <include>mysql_rules.xml</include>
-    <include>postgresql_rules.xml</include>
-    <include>ids_rules.xml</include>
-    <include>squid_rules.xml</include>
-    <include>firewall_rules.xml</include>
-    <include>cisco-ios_rules.xml</include>
-    <include>netscreenfw_rules.xml</include>
-    <include>sonicwall_rules.xml</include>
-    <include>postfix_rules.xml</include>
-    <include>sendmail_rules.xml</include>
-    <include>imapd_rules.xml</include>
-    <include>mailscanner_rules.xml</include>
-    <include>dovecot_rules.xml</include>
-    <include>ms-exchange_rules.xml</include>
-    <include>racoon_rules.xml</include>
-    <include>vpn_concentrator_rules.xml</include>
-    <include>spamd_rules.xml</include>
-    <include>msauth_rules.xml</include>
-    <include>mcafee_av_rules.xml</include>
-    <include>trend-osce_rules.xml</include>
-    <include>ms-se_rules.xml</include>
-    <!-- <include>policy_rules.xml</include> -->
-    <include>zeus_rules.xml</include>
-    <include>solaris_bsm_rules.xml</include>
-    <include>vmware_rules.xml</include>
-    <include>ms_dhcp_rules.xml</include>
-    <include>asterisk_rules.xml</include>
-    <include>ossec_rules.xml</include>
-    <include>attack_rules.xml</include>
-    <include>local_rules.xml</include>
-  </rules>  
-
-  <% if @ossec['syscheck'] -%>
+  <% @ossec['rules'].each do |rule| -%>
+    <include><%= rule %></include>
+  <% end -%>
+  </rules>
+  
+<% end -%>
+<% if @ossec.has_key?('syscheck') && @ossec['syscheck']['enable'] -%>
   <syscheck>
     <!-- Frequency that syscheck is executed - default to every 22 hours -->
-    <frequency><%= node['ossec']['syscheck_freq'] %></frequency>
+    <frequency><%= @ossec['syscheck']['frequency'] %></frequency>
     
-    <!-- Directories to check  (perform all possible verifications) -->
-    <directories check_all="yes">/etc,/usr/bin,/usr/sbin</directories>
-    <directories check_all="yes">/bin,/sbin</directories>
-
-    <!-- Files/directories to ignore -->
-    <ignore>/etc/mtab</ignore>
-    <ignore>/etc/mnttab</ignore>
-    <ignore>/etc/hosts.deny</ignore>
-    <ignore>/etc/mail/statistics</ignore>
-    <ignore>/etc/random-seed</ignore>
-    <ignore>/etc/adjtime</ignore>
-    <ignore>/etc/httpd/logs</ignore>
-    <ignore>/etc/utmpx</ignore>
-    <ignore>/etc/wtmpx</ignore>
-    <ignore>/etc/cups/certs</ignore>
-    <ignore>/etc/dumpdates</ignore>
-    <ignore>/etc/svc/volatile</ignore>
-
+    <% @ossec['syscheck']['ignore'].each do |ignore| -%>
+    <ignore><%= ignore %></ignore>
+  	<% end -%>
+  	
+  	<% @ossec['syscheck']['checkall'].each do |check| -%>
+    <directories check_all="yes"><%= check %></directories>
+  	<% end -%>
+  	
     <!-- Windows files to ignore -->
     <ignore>C:\WINDOWS/System32/LogFiles</ignore>
     <ignore>C:\WINDOWS/Debug</ignore>
@@ -123,7 +78,7 @@
     <ignore>C:\WINDOWS/system32/spool</ignore>
     <ignore>C:\WINDOWS/system32/CatRoot</ignore>
   </syscheck>
-
+  
 <% end -%>
 <% if @ossec['rootcheck'] -%>
   <rootcheck>
@@ -136,69 +91,20 @@
   </rootcheck>
 
 <% end -%>
-  <alerts>
-    <log_alert_level>1</log_alert_level>
-    <email_alert_level>7</email_alert_level>
-  </alerts>
-
+<% if ! @ossec.has_key?('commands') -%>
+<%   @ossec['commands'].each_key do |command| -%>
   <command>
-    <name>host-deny</name>
-    <executable>host-deny.sh</executable>
-    <expect>srcip</expect>
-    <timeout_allowed>yes</timeout_allowed>
+    <name><%= command %></name>
+    <executable><%= @ossec[command]['executable'] %></executable>
+    <expect><%= @ossec[command]['srcip'] %></expect>
+    <timeout_allowed><%= @ossec[command]['timeout_allowed'] %></timeout_allowed>
   </command>  
-
-  <command>
-    <name>firewall-drop</name>
-    <executable>firewall-drop.sh</executable>
-    <expect>srcip</expect>
-    <timeout_allowed>yes</timeout_allowed>
-  </command>  
-
-  <command>
-    <name>disable-account</name>
-    <executable>disable-account.sh</executable>
-    <expect>user</expect>
-    <timeout_allowed>yes</timeout_allowed>
-  </command>  
-
-  <command>
-    <name>restart-ossec</name>
-    <executable>restart-ossec.sh</executable>
-    <expect></expect>
-  </command>
-
-  <command>
-    <name>route-null</name>
-    <executable>route-null.sh</executable>
-    <expect>srcip</expect>
-    <timeout_allowed>yes</timeout_allowed>
-  </command>
-
+  
+<%   end -%>
+<% end -%>
+<% unless !@ossec.has_key?('logs') -%>
   <!-- Files to monitor (localfiles) -->
-
-  <localfile>
-    <log_format>syslog</log_format>
-    <location>/var/log/messages</location>
-  </localfile>
-
-  <localfile>
-    <log_format>syslog</log_format>
-    <location>/var/log/auth.log</location>
-  </localfile>
-
-  <localfile>
-    <log_format>syslog</log_format>
-    <location>/var/log/syslog</location>
-  </localfile>
-
-  <localfile>
-    <log_format>syslog</log_format>
-    <location>/var/log/mail.info</location>
-  </localfile>
-
-<% unless node['ossec']['logs'].empty? -%>
-<%   node['ossec']['logs'].each do |log| -%>
+<%   @ossec['logs'].each do |log| -%>
   <localfile>
     <log_format>syslog</log_format>
     <location><%= log %></location>

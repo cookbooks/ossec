@@ -20,23 +20,34 @@
 node.set['ossec']['user']['install_type'] = "server"
 node.set['ossec']['server']['maxagents']  = 1024
 
-node.save
-
 include_recipe "ossec"
 
 agent_manager = "#{node['ossec']['user']['dir']}/bin/ossec-batch-manager.pl"
 
 ssh_hosts = Array.new
 
-search(:node, "ossec:[* TO *] NOT role:#{node['ossec']['server_role']}") do |n|
-
-  ssh_hosts << n['ipaddress'] if n['keys']
-
-  execute "#{agent_manager} -a --ip #{n['ipaddress']} -n #{n['hostname']}" do
-    not_if "grep '#{n['hostname']} #{n['ipaddress']}' #{node['ossec']['user']['dir']}/etc/client.keys"
+if Chef::Config[:solo]
+  if !node['ossec']['user'].has_key?('agents') || node['ossec']['user']['agents'].length == 0
+    Chef::Log.warn "No agents defined in node['ossec']['user']['agents']! "
+  else
+    node['ossec']['user']['agents'].each do |n|
+      Chef::Log.info "OSSEC agent found at #{n['hostname']}"
+      ssh_hosts << n
+    end
   end
-
+else
+  search(:node, "ossec:[* TO *] NOT role:#{node['ossec']['server_role']}") do |n|
+    ssh_hosts << n if n['keys']
+  end
+  node.save
 end
+
+ssh_hosts.each do |n|
+  execute "#{agent_manager} -a --ip #{n['ipaddress']} -n #{n['hostname']}" do
+      not_if "grep '#{n['hostname']} #{n['ipaddress']}' #{node['ossec']['user']['dir']}/etc/client.keys"
+  end
+end
+
 
 template "/usr/local/bin/dist-ossec-keys.sh" do
   source "dist-ossec-keys.sh.erb"
@@ -64,7 +75,7 @@ template "#{node['ossec']['user']['dir']}/.ssh/id_rsa" do
 end
 
 cron "distribute-ossec-keys" do
-  minute "0"
+  minute "*/5"
   command "/usr/local/bin/dist-ossec-keys.sh"
   only_if { ::File.exists?("#{node['ossec']['user']['dir']}/etc/client.keys") }
 end

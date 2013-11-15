@@ -76,3 +76,11 @@ service "ossec" do
   supports :status => true, :restart => true
   action [:enable, :start]
 end
+
+#chef solo doesn't run on a set schedule, so emulate that behavior to make sure ossec is running.
+if Chef::Config[:solo]
+  cron "OSSEC running " do
+    minute "*/5"
+    command "/etc/init.d/ossec start"
+  end
+end
